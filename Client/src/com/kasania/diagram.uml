@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="1101.0" y="764.0">com.kasania.ui.scenes.ConversationScene</node>
+    <node x="970.083888888889" y="348.5">com.kasania.ui.scenes.Scene</node>
+    <node x="825.5000000000001" y="960.5">com.kasania.ui.scenes.SceneNavigator</node>
+    <node x="0.0" y="670.0">com.kasania.net.Receiver</node>
+    <node x="276.00000000000006" y="728.0">com.kasania.net.Sender</node>
+    <node x="857.0" y="728.0">com.kasania.ui.scenes.ConnectionSyncScene</node>
+    <node x="798.3333333333334" y="1403.0">com.kasania.Main</node>
+    <node x="227.3755555555557" y="0.0">com.kasania.net.UserInfo</node>
+    <node x="332.05500000000006" y="152.0">com.kasania.net.DataType</node>
+    <node x="175.36222222222227" y="938.0">com.kasania.net.Connection</node>
+    <node x="562.0" y="728.0">com.kasania.ui.scenes.LoginScene</node>
+    <node x="780.3333333333334" y="1228.0">com.kasania.ui.MainFrame</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.kasania.ui.scenes.SceneNavigator" target="com.kasania.ui.scenes.ConnectionSyncScene">
+      <point x="-23.916666666666686" y="-97.5" />
+      <point x="945.0833333333335" y="918.0" />
+      <point x="913.0" y="918.0" />
+      <point x="-56.0" y="51.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.ConnectionSyncScene" target="com.kasania.net.DataType">
+      <point x="-74.66666666666669" y="-51.0" />
+      <point x="894.3333333333333" y="620.0" />
+      <point x="603.3050000000001" y="620.0" />
+      <point x="116.25" y="224.0" />
+    </edge>
+    <edge source="com.kasania.ui.MainFrame" target="com.kasania.net.Connection">
+      <point x="-74.39999999999998" y="-62.5" />
+      <point x="798.9333333333334" y="1208.0" />
+      <point x="230.36222222222227" y="1208.0" />
+      <point x="-55.0" y="120.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.LoginScene" target="com.kasania.net.DataType">
+      <point x="-91.66666666666669" y="-51.0" />
+      <point x="607.8333333333334" y="650.0" />
+      <point x="525.8050000000001" y="650.0" />
+      <point x="38.75" y="224.0" />
+    </edge>
+    <edge source="com.kasania.net.Connection" target="com.kasania.net.Sender">
+      <point x="27.5" y="-120.0" />
+      <point x="312.8622222222223" y="918.0" />
+      <point x="342.50000000000006" y="918.0" />
+      <point x="-66.5" y="51.0" />
+    </edge>
+    <edge source="com.kasania.net.Receiver" target="com.kasania.net.DataType">
+      <point x="85.33333333333326" y="-109.0" />
+      <point x="213.33333333333326" y="650.0" />
+      <point x="370.80500000000006" y="650.0" />
+      <point x="-116.25" y="224.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.SceneNavigator" target="com.kasania.ui.scenes.Scene">
+      <point x="119.58333333333337" y="-97.5" />
+      <point x="1088.5833333333335" y="918.0" />
+      <point x="1295.5" y="918.0" />
+      <point x="1295.5" y="640.0" />
+      <point x="1097.5005555555556" y="640.0" />
+      <point x="57.916666666666686" y="27.5" />
+    </edge>
+    <edge source="com.kasania.Main" target="com.kasania.ui.MainFrame">
+      <point x="0.0" y="-27.5" />
+      <point x="0.0" y="62.5" />
+    </edge>
+    <edge source="com.kasania.ui.MainFrame" target="com.kasania.ui.scenes.SceneNavigator">
+      <point x="0.0" y="-62.5" />
+      <point x="-95.66666666666669" y="97.5" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.ConnectionSyncScene" target="com.kasania.ui.scenes.Scene">
+      <point x="74.66666666666669" y="-51.0" />
+      <point x="1043.6666666666667" y="650.0" />
+      <point x="1051.1672222222223" y="650.0" />
+      <point x="11.583333333333371" y="27.5" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.SceneNavigator" target="com.kasania.ui.scenes.LoginScene">
+      <point x="-119.58333333333337" y="-97.5" />
+      <point x="849.4166666666667" y="918.0" />
+      <point x="630.75" y="918.0" />
+      <point x="-68.75" y="51.0" />
+    </edge>
+    <edge source="com.kasania.net.DataType" target="com.kasania.net.UserInfo">
+      <point x="-77.5" y="-224.0" />
+      <point x="409.55500000000006" y="132.0" />
+      <point x="325.5005555555557" y="132.0" />
+      <point x="19.625" y="51.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.SceneNavigator" target="com.kasania.ui.scenes.ConversationScene">
+      <point x="71.75" y="-97.5" />
+      <point x="1040.75" y="908.0" />
+      <point x="1193.0" y="908.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="com.kasania.net.Receiver" target="com.kasania.net.UserInfo">
+      <point x="0.0" y="-109.0" />
+      <point x="128.0" y="132.0" />
+      <point x="286.2505555555557" y="132.0" />
+      <point x="-19.625" y="51.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.LoginScene" target="com.kasania.ui.scenes.Scene">
+      <point x="91.66666666666663" y="-51.0" />
+      <point x="791.1666666666667" y="640.0" />
+      <point x="1004.833888888889" y="640.0" />
+      <point x="-34.75" y="27.5" />
+    </edge>
+    <edge source="com.kasania.net.Sender" target="com.kasania.net.DataType">
+      <point x="0.0" y="-51.0" />
+      <point x="409.00000000000006" y="650.0" />
+      <point x="448.30500000000006" y="650.0" />
+      <point x="-38.75" y="224.0" />
+    </edge>
+    <edge source="com.kasania.ui.scenes.ConversationScene" target="com.kasania.ui.scenes.Scene">
+      <point x="0.0" y="-15.0" />
+      <point x="1193.0" y="650.0" />
+      <point x="1074.3338888888889" y="650.0" />
+      <point x="34.75" y="27.5" />
+    </edge>
+    <edge source="com.kasania.net.Connection" target="com.kasania.net.Receiver">
+      <point x="-82.5" y="-120.0" />
+      <point x="202.86222222222227" y="918.0" />
+      <point x="64.0" y="918.0" />
+      <point x="-64.0" y="109.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.8430311231393776" x="648.0" y="729.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Fields</Category>
+    <Category>Properties</Category>
+    <Category>Constructors</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
