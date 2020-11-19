@@ -8,7 +8,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        supportFragmentManager.beginTransaction().replace(R.id.content_root, MainFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.content_root, LoginFragment()).commit()
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Connection.instance.disconnect()
     }
 }
