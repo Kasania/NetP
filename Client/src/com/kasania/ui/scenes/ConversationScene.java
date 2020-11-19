@@ -1,7 +1,7 @@
-package com.kasania.server.ui.scenes;
+package com.kasania.ui.scenes;
 
-import com.kasania.server.net.DataType;
-import com.kasania.server.net.UserInfo;
+import com.kasania.net.DataType;
+import com.kasania.net.UserInfo;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class ConversationScene extends Scene{
 
-    private Canvas canvas;
+    private final Canvas canvas;
 
     {
         canvas = new Canvas();

@@ -1,4 +1,4 @@
-package com.kasania.server.net;
+package com.kasania.net;
 
 public class UserInfo {
     public final int idx;

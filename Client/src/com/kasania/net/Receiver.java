@@ -1,6 +1,7 @@
-package com.kasania.server.net;
+package com.kasania.net;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,10 +34,7 @@ public class Receiver {
 
             ByteBuffer buffer = reader.get();
             char type = buffer.getChar();
-
-
             byte[] data = new byte[buffer.limit() - Character.BYTES];
-
             buffer.get(data);
 
             DataType.getType(type).received(new UserInfo(0,""),data);

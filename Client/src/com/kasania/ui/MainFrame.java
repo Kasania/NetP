@@ -1,7 +1,7 @@
-package com.kasania.server.ui;
+package com.kasania.ui;
 
-import com.kasania.server.net.Connection;
-import com.kasania.server.ui.scenes.SceneNavigator;
+import com.kasania.net.Connection;
+import com.kasania.ui.scenes.SceneNavigator;
 
 import javax.swing.*;
 

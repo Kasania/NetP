@@ -1,6 +1,6 @@
-package com.kasania.server;
+package com.kasania;
 
-import com.kasania.server.ui.MainFrame;
+import com.kasania.ui.MainFrame;
 
 public class Main {
     public static void main(String[] args) {
