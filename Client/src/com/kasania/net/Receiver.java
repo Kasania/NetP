@@ -1,4 +1,4 @@
-package com.kasania.net;
+package com.kasania.server.net;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -34,21 +34,12 @@ public class Receiver {
             ByteBuffer buffer = reader.get();
             char type = buffer.getChar();
 
-            int src = buffer.getInt();
 
-            byte[] data = new byte[buffer.limit() - Character.BYTES - Integer.BYTES];
+            byte[] data = new byte[buffer.limit() - Character.BYTES];
 
             buffer.get(data);
 
-            int idx = 0;
-            for (int i : names.keySet()) {
-                if (i == src) {
-                    break;
-                }
-                ++idx;
-            }
-
-            DataType.getType(type).received(new UserInfo(idx,names.get(src)),data);
+            DataType.getType(type).received(new UserInfo(0,""),data);
 
         }
     }

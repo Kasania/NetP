@@ -1,4 +1,4 @@
-package com.kasania.net;
+package com.kasania.server.net;
 
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;

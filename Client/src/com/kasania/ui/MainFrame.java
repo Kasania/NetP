@@ -1,7 +1,7 @@
-package com.kasania.ui;
+package com.kasania.server.ui;
 
-import com.kasania.net.Connection;
-import com.kasania.ui.scenes.SceneNavigator;
+import com.kasania.server.net.Connection;
+import com.kasania.server.ui.scenes.SceneNavigator;
 
 import javax.swing.*;
 
@@ -25,6 +25,7 @@ public class MainFrame {
     private void initComponents(){
         connection = new Connection();
         navigator = new SceneNavigator();
+        connection.connect("127.0.0.1",11111);
 
         frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

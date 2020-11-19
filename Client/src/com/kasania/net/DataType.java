@@ -1,4 +1,4 @@
-package com.kasania.net;
+package com.kasania.server.net;
 
 import java.util.HashMap;
 import java.util.Map;

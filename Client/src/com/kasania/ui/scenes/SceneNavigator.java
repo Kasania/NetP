@@ -1,4 +1,4 @@
-package com.kasania.ui.scenes;
+package com.kasania.server.ui.scenes;
 
 import javax.swing.*;
 import java.util.EnumMap;
@@ -8,7 +8,9 @@ import java.util.Map;
 public class SceneNavigator {
 
     public enum Items{
-        LOGIN,SYNC,VIEW
+        LOGIN,SYNC, CONVERSATION
+
+
     }
 
     private final Map<Items,Scene> scenes;
@@ -24,9 +26,11 @@ public class SceneNavigator {
 
         loginScene = new LoginScene();
         connectionSyncPanel = new ConnectionSyncScene();
+        conversationScene = new ConversationScene();
 
         scenes.put(Items.LOGIN, loginScene);
         scenes.put(Items.SYNC, connectionSyncPanel);
+        scenes.put(Items.CONVERSATION, conversationScene);
 
         bindSceneActions();
 
@@ -35,7 +39,7 @@ public class SceneNavigator {
 
     private void bindSceneActions(){
         loginScene.addOnLoginButtonPressed(() -> navigateTo(Items.SYNC));
-        connectionSyncPanel.addOnSyncDone(() -> navigateTo(Items.VIEW));
+        connectionSyncPanel.addOnSyncDone(() -> navigateTo(Items.CONVERSATION));
 
     }
 

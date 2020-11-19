@@ -1,4 +1,4 @@
-package com.kasania.ui.scenes;
+package com.kasania.server.ui.scenes;
 
 import javax.swing.*;
 import java.awt.*;
