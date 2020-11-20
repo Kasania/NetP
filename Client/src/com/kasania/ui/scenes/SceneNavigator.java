@@ -1,6 +1,10 @@
 package com.kasania.ui.scenes;
 
+import com.kasania.net.DataType;
+
 import javax.swing.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -9,8 +13,6 @@ public class SceneNavigator {
 
     public enum Items{
         LOGIN,SYNC, CONVERSATION
-
-
     }
 
     private final Map<Items,JPanel> scenes;
@@ -38,8 +40,13 @@ public class SceneNavigator {
 
 
     private void bindSceneActions(){
-        loginScene.addOnLoginButtonPressed(() -> navigateTo(Items.SYNC));
-        connectionSyncPanel.addOnSyncDone(() -> navigateTo(Items.CONVERSATION));
+        DataType.SYNC.addReceiver((info, bytes) -> {
+            navigateTo(Items.SYNC);
+            connectionSyncPanel.setAccessCode(String.valueOf(ByteBuffer.wrap(bytes).getInt()));
+        });
+        connectionSyncPanel.addOnSyncDone(() -> {
+            navigateTo(Items.CONVERSATION);
+        });
 
     }
 

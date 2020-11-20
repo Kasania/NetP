@@ -14,7 +14,7 @@ class LoginFragment : Fragment(){
 
         val rootView = inflater.inflate(R.layout.login_fragment, container,false)
 
-        Connection.instance.connect("192.168.0.11",11111)
+        Connection.instance.connect("192.168.43.198",11111)
         return rootView
     }
 
@@ -24,7 +24,7 @@ class LoginFragment : Fragment(){
         code_confirm_button.setOnClickListener {
 
             if(Connection.instance.isConnected()){
-                Connection.instance.sendVerificationCode(code_input.text.toString())
+                Connection.instance.sendVerificationCode(code_input.text.toString().toInt())
                 Connection.instance.onSyncSucceed { requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_root, CameraFragment()).commit() }
 
             }else{

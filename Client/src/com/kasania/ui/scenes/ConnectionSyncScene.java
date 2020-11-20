@@ -4,7 +4,6 @@ import com.kasania.net.DataType;
 
 import javax.swing.*;
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 
 public class ConnectionSyncScene extends Scene {
 
@@ -25,15 +24,9 @@ public class ConnectionSyncScene extends Scene {
 
         contentPanel.add(notificationLabel, BorderLayout.NORTH);
         contentPanel.add(codeLabel, BorderLayout.CENTER);
-
-        DataType.SYNC.addReceiver((userInfo, bytes) -> {
-            setAccessCode(new String(bytes, StandardCharsets.UTF_8));
-        });
-
     }
 
-    private void setAccessCode(String code){
-        System.out.println(code);
+    public void setAccessCode(String code){
         SwingUtilities.invokeLater(() -> codeLabel.setText(code));
     }
 

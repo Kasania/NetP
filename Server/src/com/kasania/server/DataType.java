@@ -5,16 +5,20 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public enum DataType {
-    NO_TYPE('_'),
+
     LOGIN('L'),
+    TEXT('T'),
+
+    UPDATE_USER('U'),
+
     SYNC('S'),
     SYNCDone('D'),
     SYNCFail('F'),
+
     IMAGE('I'),
-    UPDATE_USER('U'),
-    TEXT('T'),
 
     VERIFY('V')
+
     ;
     private static final Map<Character, DataType> types = new HashMap<>();
 

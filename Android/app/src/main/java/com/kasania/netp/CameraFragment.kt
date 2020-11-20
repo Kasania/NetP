@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.camera_fragment.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+
 class CameraFragment : Fragment() {
     private val REQUEST_CODE_PERMISSIONS = 10
     private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
@@ -29,18 +30,19 @@ class CameraFragment : Fragment() {
     private lateinit var cameraExecutor: ExecutorService
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
 
-        val rootView = inflater.inflate(R.layout.camera_fragment,container,false)
+        val rootView = inflater.inflate(R.layout.camera_fragment, container, false)
 
         if (allPermissionsGranted()) {
+
             startCamera()
         } else {
             ActivityCompat.requestPermissions(
-                requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+                    requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
             )
         }
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -57,17 +59,17 @@ class CameraFragment : Fragment() {
 
             // Preview
             preview = Preview.Builder()
-                .build()
+                    .build()
 
 
             // Select back camera
             val cameraSelector =
-                CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build()
+                    CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build()
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
+                    .setTargetResolution(Size(1280, 720))
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
             imageAnalysis.setAnalyzer(cameraExecutor, { image ->
                 activity?.runOnUiThread { viewfinder.bitmap?.let { Connection.instance.sendImage(it) } }
                 // insert your code here.
@@ -79,7 +81,7 @@ class CameraFragment : Fragment() {
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageAnalysis
+                        this, cameraSelector, preview, imageAnalysis
                 )
                 preview?.setSurfaceProvider(viewfinder.surfaceProvider)
             } catch (exc: Exception) {
@@ -90,17 +92,17 @@ class CameraFragment : Fragment() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray
+            requestCode: Int, permissions: Array<String>, grantResults:
+            IntArray
     ) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
                 Toast.makeText(
-                    context,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
+                        context,
+                        "Permissions not granted by the user.",
+                        Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -108,7 +110,7 @@ class CameraFragment : Fragment() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            requireContext(), it
+                requireContext(), it
         ) == PackageManager.PERMISSION_GRANTED
     }
 

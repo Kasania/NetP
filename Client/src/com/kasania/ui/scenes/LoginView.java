@@ -14,11 +14,7 @@ public class LoginView {
         return contentPanel;
     }
 
-
-    public void addOnLoginButtonPressed(Runnable action){
-        loginButton.addActionListener(e -> {
-            DataType.LOGIN.send(textField.getText().getBytes(StandardCharsets.UTF_8));
-            action.run();
-        });
+    {
+        loginButton.addActionListener(e -> DataType.LOGIN.send(textField.getText().getBytes(StandardCharsets.UTF_8)));
     }
 }

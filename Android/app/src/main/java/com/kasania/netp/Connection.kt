@@ -59,12 +59,11 @@ class Connection private constructor() {
         return socketChannel.isConnected
     }
 
-    fun sendVerificationCode(code: String){
+    fun sendVerificationCode(code: Int){
         writeExecutor.execute {
-            val codeBytes = StandardCharsets.UTF_8.encode(code)
-            val packagedData = ByteBuffer.allocate(2 + codeBytes.limit())
+            val packagedData = ByteBuffer.allocate(2 + 4)
             packagedData.putChar(TYPE_VERIFICATION)
-            packagedData.put(codeBytes)
+            packagedData.putInt(code)
             packagedData.flip()
             send(packagedData)
         }
@@ -86,7 +85,7 @@ class Connection private constructor() {
                         matrix,
                         false
                 )
-                resized.compress(Bitmap.CompressFormat.PNG, 90, baos)
+                resized.compress(Bitmap.CompressFormat.JPEG, 30, baos)
                 val bitmapBytes = baos.toByteArray()
 
                 val packagedData = ByteBuffer.allocate(2 + bitmapBytes.size)
@@ -125,7 +124,8 @@ class Connection private constructor() {
 
 
             val type = packagedData.char
-            val data = ByteArray(packagedData.limit() - 2)
+            val src = packagedData.int
+            val data = ByteArray(packagedData.limit() - 2 - 4)
             packagedData.get(data)
 
             if(type == TYPE_SYNCDONE){
@@ -135,7 +135,7 @@ class Connection private constructor() {
 
         } catch (ex: ClosedByInterruptException) {
             //Disconnected
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             disconnect()
         }
