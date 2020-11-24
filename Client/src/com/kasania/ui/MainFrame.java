@@ -1,5 +1,6 @@
 package com.kasania.ui;
 
+import com.kasania.AudioReader;
 import com.kasania.net.Connection;
 import com.kasania.ui.scenes.SceneNavigator;
 
@@ -8,6 +9,7 @@ import javax.swing.*;
 public class MainFrame {
 
     private Connection connection;
+    private AudioReader audioReader;
 
     private JFrame frame;
 
@@ -23,6 +25,7 @@ public class MainFrame {
 
 
     private void initComponents(){
+        audioReader = new AudioReader();
         connection = new Connection();
         navigator = new SceneNavigator();
         connection.connect("127.0.0.1",11111);

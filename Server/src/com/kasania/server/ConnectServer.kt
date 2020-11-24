@@ -10,6 +10,8 @@ import kotlin.collections.HashMap
 
 class ConnectServer {
     private var selector: Selector? = null
+    private var imageSelector: Selector? = null
+    private var audioSelector: Selector? = null
     private var connections: MutableMap<SocketChannel, Connection> = Collections.synchronizedMap(HashMap())
     private var desktopConnections: MutableMap<SocketChannel, DesktopConnection> = Collections.synchronizedMap(HashMap())
     private var mobileConnections: MutableMap<SocketChannel, MobileConnection> = Collections.synchronizedMap(HashMap())
@@ -18,45 +20,96 @@ class ConnectServer {
 
         DataType.LOGIN.addReceiver(this::desktopLogin)
         DataType.VERIFY.addReceiver(this::mobileVerification)
-        DataType.IMAGE.addReceiver(this::broadCastImage)
+        DataType.IMAGE.addUDPReceiver(this::broadCastImage)
+        DataType.AUDIO.addUDPReceiver(this::broadCastAudio)
+        DataType.AUDIO.addReceiver(this::broadCastAudio2)
 
 
         try {
             selector = Selector.open()
-            
+            imageSelector = Selector.open()
+            audioSelector = Selector.open()
+
             val serverSocketChannel = ServerSocketChannel.open()
             serverSocketChannel.bind(InetSocketAddress(11111))
             serverSocketChannel.configureBlocking(false)
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT)
+
+            val imageChannel = DatagramChannel.open()
+            imageChannel.bind(InetSocketAddress(11112))
+            imageChannel.configureBlocking(false)
+            imageChannel.register(imageSelector, SelectionKey.OP_READ)
+
+
+            val audioChannel = DatagramChannel.open()
+            audioChannel.bind(InetSocketAddress(11113))
+            audioChannel.configureBlocking(false)
+            audioChannel.register(audioSelector, SelectionKey.OP_READ)
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
     fun start() {
-        while (true) {
-            selector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
-
-            for (selectedKey in selector!!.selectedKeys()) {
-                try{
-
-                    if (selectedKey.isAcceptable) {
-                        acceptClient(selectedKey);
+        Thread{
+            while (true) {
+                imageSelector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
+                for (selectedKey in imageSelector!!.selectedKeys()) {
+                    try{
+                        if (selectedKey.isReadable) {
+                            readImage(selectedKey)
+                        }
+                    }catch (exp: Exception){
                     }
-                    else if (selectedKey.isReadable) {
-                        read(selectedKey);
-                    }
-                }catch (exp: Exception){
-                    try {
-                        disconnect(selectedKey)
-                    }catch (exp:Exception){}
-
                 }
+                imageSelector!!.selectedKeys().clear()
+            }
+        }.start()
+
+
+        Thread{
+            while (true) {
+                audioSelector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
+
+                for (selectedKey in audioSelector!!.selectedKeys()) {
+                    try{
+                        if (selectedKey.isReadable) {
+                            readAudio(selectedKey)
+                        }
+                    }catch (exp: Exception){
+                    }
+                }
+                audioSelector!!.selectedKeys().clear()
 
             }
-            selector!!.selectedKeys().clear()
+        }.start()
 
-        }
+        Thread{
+            while (true) {
+                selector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
+
+                for (selectedKey in selector!!.selectedKeys()) {
+                    try{
+
+                        if (selectedKey.isAcceptable) {
+                            acceptClient(selectedKey);
+                        }
+                        else if (selectedKey.isReadable) {
+                            read(selectedKey);
+                        }
+                    }catch (exp: Exception){
+                        try {
+                            disconnect(selectedKey)
+                        }catch (exp:Exception){}
+
+                    }
+
+                }
+                selector!!.selectedKeys().clear()
+
+            }
+        }.start()
     }
 
     private fun disconnect(selectedKey: SelectionKey) {
@@ -132,6 +185,29 @@ class ConnectServer {
 
     }
 
+    @Throws(IOException::class)
+    private fun readImage(selectionKey: SelectionKey) {
+        val datagramChannel = selectionKey.channel() as DatagramChannel
+        val packagedData: ByteBuffer = ByteBuffer.allocate(8192)
+        datagramChannel.receive(packagedData)
+        packagedData.flip()
+        broadCastImage(datagramChannel,packagedData)
+//        DataType.IMAGE.receivedUDP(datagramChannel, packagedData)
+    }
+
+    @Throws(IOException::class)
+    private fun readAudio(selectionKey: SelectionKey) {
+        val datagramChannel = selectionKey.channel() as DatagramChannel
+        val packagedData: ByteBuffer = ByteBuffer.allocate(3528)
+        datagramChannel.receive(packagedData)
+        packagedData.flip()
+        broadCastAudio(datagramChannel,packagedData)
+    }
+
+    private fun debug(socketChannel: SocketChannel, data: ByteArray){
+        println("$socketChannel:$data")
+    }
+
     private fun desktopLogin(socketChannel: SocketChannel, data: ByteArray){
         println("login : $socketChannel")
         val desktopConnection = DesktopConnection(socketChannel, String(data, Charsets.UTF_8))
@@ -150,13 +226,13 @@ class ConnectServer {
             val mobileConnection = MobileConnection(socketChannel, connectionID)
 
             mobileConnections[socketChannel] = mobileConnection
-            connections[socketChannel]?.changeType(type = Connection.Type.MOBILE)
+            connections[socketChannel]?.changeType(Connection.Type.MOBILE)
 
             desktopConnection.syncDone()
             mobileConnection.syncDone()
             desktopConnection.syncDone.set(true)
 
-            println("sync : $connectionID, $desktopConnection, $mobileConnection")
+            println("sync : $connectionID, ${desktopConnection.socketChannel}, ${mobileConnection.socketChannel}")
             sendUserList()
         }
 
@@ -192,13 +268,24 @@ class ConnectServer {
         }
     }
 
-    private fun broadCastImage(src: SocketChannel, data: ByteArray){
-        val imageData = ByteBuffer.wrap(data)
+    private fun broadCastImage(src: DatagramChannel, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-
-            desktopConnection.value.sendImage(imageData, mobileConnections[src]!!.connectionID)
+            desktopConnection.value.sendImage(data, 0)
         }
     }
 
+    private fun broadCastAudio(src: DatagramChannel, data: ByteBuffer){
+        for (desktopConnection in desktopConnections) {
+//            desktopConnection.value.sendAudio(audioData, mobileConnections[src]!!.connectionID)
+            desktopConnection.value.sendAudio(data, 0)
+        }
+    }
+
+    private fun broadCastAudio2(socketChannel: SocketChannel, data: ByteArray){
+        for (desktopConnection in desktopConnections) {
+//            desktopConnection.value.sendAudio(audioData, mobileConnections[src]!!.connectionID)
+            desktopConnection.value.sendAudio2(ByteBuffer.wrap(data), 0)
+        }
+    }
 
 }

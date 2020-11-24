@@ -14,7 +14,7 @@ class LoginFragment : Fragment(){
 
         val rootView = inflater.inflate(R.layout.login_fragment, container,false)
 
-        Connection.instance.connect("192.168.43.198",11111)
+        Connection.instance.connect("192.168.219.101",11111)
         return rootView
     }
 

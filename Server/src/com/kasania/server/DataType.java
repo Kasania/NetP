@@ -1,5 +1,7 @@
 package com.kasania.server;
 
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -16,7 +18,7 @@ public enum DataType {
     SYNCFail('F'),
 
     IMAGE('I'),
-
+    AUDIO('A'),
     VERIFY('V')
 
     ;
@@ -35,6 +37,7 @@ public enum DataType {
 
     public final char code;
     private BiConsumer<SocketChannel, byte[]> received;
+    private BiConsumer<DatagramChannel, ByteBuffer> received2;
 
     DataType(char code){
         this.code = code;
@@ -44,8 +47,17 @@ public enum DataType {
         this.received = receiver;
     }
 
+
+    public void addUDPReceiver(BiConsumer<DatagramChannel, ByteBuffer> receiver){
+        this.received2 = receiver;
+    }
+
     public void received(SocketChannel channel, byte[] data){
         received.accept(channel,data);
+    }
+
+    public void receivedUDP(DatagramChannel channel, ByteBuffer data){
+        received2.accept(channel,data);
     }
 
 }

@@ -9,16 +9,16 @@ import java.util.function.Supplier;
 
 public class Receiver {
     private Supplier<ByteBuffer> reader;
+    private Supplier<ByteBuffer> imageReader;
+    private Supplier<ByteBuffer> audioReader;
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isImageReceiveRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isAudioReceiveRunning = new AtomicBoolean(false);
 
-    private final Map<Integer, String> names;
-
-
+    private static final Map<Integer, String> names = new ConcurrentHashMap<>();
 
     public Receiver(){
-
-        names = new ConcurrentHashMap<>();
 
         DataType.UPDATE_USER.addReceiver(this::updateNickname);
     }
@@ -56,21 +56,81 @@ public class Receiver {
         }
     }
 
+
+    boolean readImageData(){
+        isImageReceiveRunning.set(true);
+
+        while(true){
+            synchronized (this){
+                if(!isImageReceiveRunning.get()){
+                    return false;
+                }
+            }
+
+            ByteBuffer buffer = imageReader.get();
+            byte[] data = new byte[buffer.limit()];
+            buffer.get(data);
+            int idx = 0;
+//            for (int i : names.keySet()) {
+//                if (i == src) {
+//                    break;
+//                }
+//                ++idx;
+//            }
+            DataType.IMAGE.received(new UserInfo(idx, names.get(0)),data);
+
+        }
+    }
+
+
+
+    boolean readAudioData(){
+        isAudioReceiveRunning.set(true);
+
+        while(true){
+            synchronized (this){
+                if(!isAudioReceiveRunning.get()){
+                    return false;
+                }
+            }
+
+            ByteBuffer buffer = audioReader.get();
+//
+//            byte[] data = new byte[buffer.limit()];
+//            buffer.get(data);
+            int idx = 0;
+//            for (int i : names.keySet()) {
+//                if (i == src) {
+//                    break;
+//                }
+//                ++idx;
+//            }
+            DataType.AUDIO.received(new UserInfo(idx, names.get(0)),buffer.array());
+
+        }
+    }
+
     private void updateNickname(UserInfo _unused, byte[] data){
         String[] value = new String(data, StandardCharsets.UTF_8).split("//");
 
-        names.clear();
-
-        for (String s : value) {
-            String[] userInfo = s.split("::");
-            names.putIfAbsent(Integer.valueOf(userInfo[0]), userInfo[1]);
+        synchronized (names){
+            names.clear();
+            for (String s : value) {
+                String[] userInfo = s.split("::");
+                names.putIfAbsent(Integer.valueOf(userInfo[0]), userInfo[1]);
+            }
         }
-
-        System.out.println(names);
     }
 
     void addReader(Supplier<ByteBuffer> reader){
         this.reader = reader;
+    }
+    void addImageReader(Supplier<ByteBuffer> reader){
+        this.imageReader = reader;
+    }
+
+    void addAudioReader(Supplier<ByteBuffer> reader){
+        this.audioReader = reader;
     }
 
     void shutdown(){

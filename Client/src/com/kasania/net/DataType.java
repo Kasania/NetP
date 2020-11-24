@@ -12,6 +12,7 @@ public enum DataType {
     SYNC('S'),
     SYNCDone('D'),
     IMAGE('I'),
+    AUDIO('A'),
     UPDATE_USER('U'),
     TEXT('T')
     ;

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -13,9 +14,19 @@ import java.util.concurrent.FutureTask;
 public final class Connection {
 
     private SocketChannel socketChannel;
+    private DatagramChannel imageDataChannel;
+    private DatagramChannel audioDataChannel;
 
     private ExecutorService executorService;
     private FutureTask<?> task;
+
+
+    private ExecutorService executorService2;
+    private FutureTask<?> task2;
+
+
+    private ExecutorService executorService3;
+    private FutureTask<?> task3;
 
     private Sender sender;
     private Receiver receiver;
@@ -28,15 +39,33 @@ public final class Connection {
                 socketChannel = SocketChannel.open();
                 socketChannel.connect(new InetSocketAddress(address,port));
 
+                imageDataChannel = DatagramChannel.open();
+                imageDataChannel.configureBlocking(true);
+                imageDataChannel.bind(new InetSocketAddress(11114));
+
+                audioDataChannel = DatagramChannel.open();
+                audioDataChannel.configureBlocking(true);
+                audioDataChannel.bind(new InetSocketAddress(11115));
+
                 sender = new Sender();
                 receiver = new Receiver();
 
                 receiver.addReader(this::read);
+                receiver.addImageReader(this::readImage);
+                receiver.addAudioReader(this::readAudio);
                 sender.addSender(this::write);
 
                 executorService = Executors.newSingleThreadExecutor();
                 task = new FutureTask<>(receiver::readData);
                 executorService.execute(task);
+
+                executorService2 = Executors.newSingleThreadExecutor();
+                task2 = new FutureTask<>(receiver::readImageData);
+                executorService2.execute(task2);
+
+                executorService3 = Executors.newSingleThreadExecutor();
+                task3 = new FutureTask<>(receiver::readAudioData);
+                executorService3.execute(task3);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -68,6 +97,30 @@ public final class Connection {
         }
         Objects.requireNonNull(data).flip();
         return data;
+    }
+
+    ByteBuffer readImage(){
+
+        ByteBuffer data = ByteBuffer.allocate(8192);
+
+        try {
+            imageDataChannel.receive(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return data.flip();
+    }
+
+    ByteBuffer readAudio(){
+
+        ByteBuffer data = ByteBuffer.allocate(3528);
+
+        try {
+            audioDataChannel.receive(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return data.flip();
     }
 
     void write(ByteBuffer byteBuffer){

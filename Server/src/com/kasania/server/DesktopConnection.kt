@@ -14,12 +14,23 @@ class DesktopConnection(socketChannel: SocketChannel, val name: String) : Connec
 
     fun sendImage(data: ByteBuffer, src:Int){
         if(syncDone.get()){
-            send(DataType.IMAGE, src, data)
+            sendImage(data)
         }
     }
 
+    fun sendAudio(data: ByteBuffer, src:Int){
+        if(syncDone.get()){
+            sendAudio(data)
+        }
+    }
+    fun sendAudio2(data: ByteBuffer, src:Int){
+        if(syncDone.get()){
+            send(DataType.AUDIO,src, data)
+        }
+
+    }
     fun sendUserList(userList: String) {
-        send(DataType.UPDATE_USER, ByteBuffer.wrap(userList.toByteArray(Charsets.UTF_8)))
+        send(DataType.UPDATE_USER,0, ByteBuffer.wrap(userList.toByteArray(Charsets.UTF_8)))
 
     }
 
@@ -27,7 +38,7 @@ class DesktopConnection(socketChannel: SocketChannel, val name: String) : Connec
         val buffer = ByteBuffer.allocate(Integer.BYTES)
         buffer.putInt(connectionID)
         buffer.flip()
-        send(DataType.SYNC, buffer)
+        send(DataType.SYNC,0, buffer)
     }
 
 }
