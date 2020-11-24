@@ -44,6 +44,8 @@ class Connection private constructor() {
     private lateinit var imageDataAddress: InetSocketAddress
     private lateinit var audioDataAddress: InetSocketAddress
 
+    private var connectionID:Int = 0
+
     fun connect(address: String, port: Int) {
         this.address = address
         this.port = port
@@ -78,31 +80,19 @@ class Connection private constructor() {
             packagedData.putInt(code)
             packagedData.flip()
             send(packagedData)
+            connectionID = code
         }
     }
 
 
     fun sendAudio(data:ByteArray){
         writeExecutor.execute {
-//                val packagedData = ByteBuffer.allocate(2 + data.size)
-//                packagedData.putChar(TYPE_AUDIO)
-//                packagedData.put(data)
-//                packagedData.flip()
-//                send(packagedData)
             if(isSynchronized.get()){
-//
-//                val packaged = ByteBuffer.allocate(data.size*2)
-//                for (datum in data) {
-//                    packaged.putShort(datum)
-//                }
-//
-//                for (index in data.indices) {
-//                    if(abs(data[index].toInt())<300){
-//                        data[index] = 0
-//                    }
-//                }
-
-                dataChannel.send(ByteBuffer.wrap(data),audioDataAddress)
+                val packagedData = ByteBuffer.allocate(4 + data.size)
+                packagedData.putInt(connectionID)
+                packagedData.put(data)
+                packagedData.flip()
+                dataChannel.send(packagedData,audioDataAddress)
             }
             return@execute
         }
@@ -111,8 +101,8 @@ class Connection private constructor() {
 
 
     fun sendImage(bitmap: Bitmap){
-        if(isSynchronized.get()){
-            writeExecutor.execute {
+        writeExecutor.execute {
+            if(isSynchronized.get()){
                 val baos = ByteArrayOutputStream()
                 val matrix = Matrix()
                 matrix.postScale(240.toFloat() / bitmap.width, 360.toFloat() / bitmap.height)
@@ -125,12 +115,16 @@ class Connection private constructor() {
                         matrix,
                         false
                 )
-                resized.compress(Bitmap.CompressFormat.JPEG, 30, baos)
+                resized.compress(Bitmap.CompressFormat.JPEG, 40, baos)
                 val bitmapBytes = baos.toByteArray()
-                dataChannel.send(ByteBuffer.wrap(bitmapBytes),imageDataAddress)
+
+                val packagedData = ByteBuffer.allocate(4 + bitmapBytes.size)
+                packagedData.putInt(connectionID)
+                packagedData.put(bitmapBytes)
+                packagedData.flip()
+                dataChannel.send(packagedData,imageDataAddress)
             }
         }
-
     }
 
     private fun send(byteBuffer: ByteBuffer){

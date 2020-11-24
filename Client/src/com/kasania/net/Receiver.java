@@ -68,21 +68,20 @@ public class Receiver {
             }
 
             ByteBuffer buffer = imageReader.get();
-            byte[] data = new byte[buffer.limit()];
+            byte[] data = new byte[buffer.limit() - Integer.BYTES];
+            int src = buffer.getInt();
             buffer.get(data);
             int idx = 0;
-//            for (int i : names.keySet()) {
-//                if (i == src) {
-//                    break;
-//                }
-//                ++idx;
-//            }
-            DataType.IMAGE.received(new UserInfo(idx, names.get(0)),data);
+            for (int i : names.keySet()) {
+                if (i == src) {
+                    break;
+                }
+                ++idx;
+            }
+            DataType.IMAGE.received(new UserInfo(idx, names.get(idx)),data);
 
         }
     }
-
-
 
     boolean readAudioData(){
         isAudioReceiveRunning.set(true);
@@ -95,17 +94,17 @@ public class Receiver {
             }
 
             ByteBuffer buffer = audioReader.get();
-//
-//            byte[] data = new byte[buffer.limit()];
-//            buffer.get(data);
+            int src = buffer.getInt();
+            byte[] data = new byte[buffer.limit() - Integer.BYTES];
+            buffer.get(data);
             int idx = 0;
-//            for (int i : names.keySet()) {
-//                if (i == src) {
-//                    break;
-//                }
-//                ++idx;
-//            }
-            DataType.AUDIO.received(new UserInfo(idx, names.get(0)),buffer.array());
+            for (int i : names.keySet()) {
+                if (i == src) {
+                    break;
+                }
+                ++idx;
+            }
+            DataType.AUDIO.received(new UserInfo(idx, names.get(idx)), data);
 
         }
     }

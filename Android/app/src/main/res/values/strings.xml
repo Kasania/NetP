@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">NetPMobile</string>
 
-    <string name="guide_input">데스크탑의 인증코드를 입력해주세요.</string>
+    <string name="guide_input">데스크탑의 접속코드를 입력해주세요.</string>
     <string name="confirm">확인</string>
     <string name="code">CODE</string>
 </resources>

@@ -37,7 +37,7 @@ public enum DataType {
 
     public final char code;
     private BiConsumer<SocketChannel, byte[]> received;
-    private BiConsumer<DatagramChannel, ByteBuffer> received2;
+    private BiConsumer<Integer, ByteBuffer> received2;
 
     DataType(char code){
         this.code = code;
@@ -48,7 +48,7 @@ public enum DataType {
     }
 
 
-    public void addUDPReceiver(BiConsumer<DatagramChannel, ByteBuffer> receiver){
+    public void addUDPReceiver(BiConsumer<Integer, ByteBuffer> receiver){
         this.received2 = receiver;
     }
 
@@ -56,8 +56,8 @@ public enum DataType {
         received.accept(channel,data);
     }
 
-    public void receivedUDP(DatagramChannel channel, ByteBuffer data){
-        received2.accept(channel,data);
+    public void receivedUDP(Integer src, ByteBuffer data){
+        received2.accept(src,data);
     }
 
 }

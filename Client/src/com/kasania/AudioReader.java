@@ -22,10 +22,7 @@ public class AudioReader {
         } catch (LineUnavailableException e) {
             e.printStackTrace();
         }
-
         DataType.AUDIO.addReceiver((info, bytes) -> toSpeaker(bytes));
-        //TODO : SOUND NOISE and DELAY
-        //can i fix that? try send only voice is detected
     }
 
     public void toSpeaker(byte[] soundBytes) {

@@ -20,10 +20,6 @@ class ConnectServer {
 
         DataType.LOGIN.addReceiver(this::desktopLogin)
         DataType.VERIFY.addReceiver(this::mobileVerification)
-        DataType.IMAGE.addUDPReceiver(this::broadCastImage)
-        DataType.AUDIO.addUDPReceiver(this::broadCastAudio)
-        DataType.AUDIO.addReceiver(this::broadCastAudio2)
-
 
         try {
             selector = Selector.open()
@@ -188,20 +184,19 @@ class ConnectServer {
     @Throws(IOException::class)
     private fun readImage(selectionKey: SelectionKey) {
         val datagramChannel = selectionKey.channel() as DatagramChannel
-        val packagedData: ByteBuffer = ByteBuffer.allocate(8192)
+        val packagedData: ByteBuffer = ByteBuffer.allocate(16384)
         datagramChannel.receive(packagedData)
         packagedData.flip()
-        broadCastImage(datagramChannel,packagedData)
-//        DataType.IMAGE.receivedUDP(datagramChannel, packagedData)
+        broadCastImage(0,packagedData)
     }
 
     @Throws(IOException::class)
     private fun readAudio(selectionKey: SelectionKey) {
         val datagramChannel = selectionKey.channel() as DatagramChannel
-        val packagedData: ByteBuffer = ByteBuffer.allocate(3528)
+        val packagedData: ByteBuffer = ByteBuffer.allocate(3528 + Int.SIZE_BYTES)
         datagramChannel.receive(packagedData)
         packagedData.flip()
-        broadCastAudio(datagramChannel,packagedData)
+        broadCastAudio(0,packagedData)
     }
 
     private fun debug(socketChannel: SocketChannel, data: ByteArray){
@@ -268,23 +263,15 @@ class ConnectServer {
         }
     }
 
-    private fun broadCastImage(src: DatagramChannel, data: ByteBuffer){
+    private fun broadCastImage(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-            desktopConnection.value.sendImage(data, 0)
+            desktopConnection.value.sendImage(data)
         }
     }
 
-    private fun broadCastAudio(src: DatagramChannel, data: ByteBuffer){
+    private fun broadCastAudio(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-//            desktopConnection.value.sendAudio(audioData, mobileConnections[src]!!.connectionID)
-            desktopConnection.value.sendAudio(data, 0)
-        }
-    }
-
-    private fun broadCastAudio2(socketChannel: SocketChannel, data: ByteArray){
-        for (desktopConnection in desktopConnections) {
-//            desktopConnection.value.sendAudio(audioData, mobileConnections[src]!!.connectionID)
-            desktopConnection.value.sendAudio2(ByteBuffer.wrap(data), 0)
+            desktopConnection.value.sendAudio(data)
         }
     }
 

@@ -40,11 +40,9 @@ public final class Connection {
                 socketChannel.connect(new InetSocketAddress(address,port));
 
                 imageDataChannel = DatagramChannel.open();
-                imageDataChannel.configureBlocking(true);
                 imageDataChannel.bind(new InetSocketAddress(11114));
 
                 audioDataChannel = DatagramChannel.open();
-                audioDataChannel.configureBlocking(true);
                 audioDataChannel.bind(new InetSocketAddress(11115));
 
                 sender = new Sender();
@@ -101,7 +99,7 @@ public final class Connection {
 
     ByteBuffer readImage(){
 
-        ByteBuffer data = ByteBuffer.allocate(8192);
+        ByteBuffer data = ByteBuffer.allocate(16384);
 
         try {
             imageDataChannel.receive(data);
@@ -113,7 +111,7 @@ public final class Connection {
 
     ByteBuffer readAudio(){
 
-        ByteBuffer data = ByteBuffer.allocate(3528);
+        ByteBuffer data = ByteBuffer.allocate(3528 + Integer.BYTES);
 
         try {
             audioDataChannel.receive(data);
