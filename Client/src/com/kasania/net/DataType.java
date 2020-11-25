@@ -1,8 +1,6 @@
 package com.kasania.net;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -30,7 +28,7 @@ public enum DataType {
 
 
     public final char code;
-    private BiConsumer<UserInfo, byte[]> received;
+    private final List<BiConsumer<UserInfo, byte[]>> receivers = new ArrayList<>();
     private Consumer<byte[]> sender;
 
     DataType(char code){
@@ -38,11 +36,13 @@ public enum DataType {
     }
 
     public void addReceiver(BiConsumer<UserInfo, byte[]> receiver){
-        this.received = receiver;
+        receivers.add(receiver);
     }
 
     public void received(UserInfo name, byte[] data){
-        received.accept(name,data);
+        for (BiConsumer<UserInfo, byte[]> receiver : receivers) {
+            receiver.accept(name,data);
+        }
     }
 
     public void addSender(Consumer<byte[]> sender){

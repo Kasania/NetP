@@ -1,5 +1,6 @@
-package com.kasania.server
+package com.kasania.server.connection
 
+import com.kasania.server.DataType
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.DatagramChannel
@@ -16,7 +17,7 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
     fun changeType(type: Type){
         this.type = type
     }
-    fun getType():Type{
+    fun getType(): Type {
         return this.type
     }
     val imageDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11114)

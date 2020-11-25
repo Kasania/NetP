@@ -1,4 +1,4 @@
-package com.kasania.server
+package com.kasania.server.connection
 
 import java.nio.channels.SocketChannel
 

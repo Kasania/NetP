@@ -10,12 +10,11 @@ public class AudioReader {
     int sampleRate = 44100;
     private final AudioFormat format = new AudioFormat(sampleRate, 16, 1, true, false);
     private SourceDataLine speaker;
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     {
 
         try {
             speaker = AudioSystem.getSourceDataLine(format);
-
             speaker.open(format,3528);
             speaker.start();
 
@@ -36,6 +35,13 @@ public class AudioReader {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void stop(){
+        executor.shutdown();
+        speaker.drain();
+        speaker.stop();
+        speaker.close();
     }
 
 }

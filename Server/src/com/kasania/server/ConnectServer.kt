@@ -1,5 +1,8 @@
 package com.kasania.server
 
+import com.kasania.server.connection.Connection
+import com.kasania.server.connection.DesktopConnection
+import com.kasania.server.connection.MobileConnection
 import java.io.IOException
 import java.lang.Exception
 import java.net.InetSocketAddress
@@ -151,7 +154,7 @@ class ConnectServer {
         if (Objects.nonNull(socketChannel)) {
             socketChannel.configureBlocking(false)
             socketChannel.register(selector, SelectionKey.OP_READ)
-            connections[socketChannel] = Connection(socketChannel,Connection.Type.PENDING)
+            connections[socketChannel] = Connection(socketChannel, Connection.Type.PENDING)
         }
         println("accepted : $selectionKey")
     }
@@ -265,13 +268,13 @@ class ConnectServer {
 
     private fun broadCastImage(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-            desktopConnection.value.sendImage(data)
+            desktopConnection.value.sendImage(data,0)
         }
     }
 
     private fun broadCastAudio(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-            desktopConnection.value.sendAudio(data)
+            desktopConnection.value.sendAudio(data,0)
         }
     }
 

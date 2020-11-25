@@ -1,5 +1,6 @@
-package com.kasania.server
+package com.kasania.server.connection
 
+import com.kasania.server.DataType
 import java.nio.ByteBuffer
 import java.nio.channels.SocketChannel
 import java.security.SecureRandom
