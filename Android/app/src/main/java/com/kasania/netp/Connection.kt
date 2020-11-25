@@ -2,7 +2,6 @@ package com.kasania.netp
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
@@ -12,7 +11,6 @@ import java.nio.channels.SocketChannel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.abs
 
 
 class Connection private constructor() {
@@ -22,9 +20,7 @@ class Connection private constructor() {
     }
 
     private val TYPE_VERIFICATION = 'V'
-    private val TYPE_IMAGE = 'I'
     private val TYPE_SYNCDONE = 'D'
-    private val TYPE_AUDIO = 'A'
 
     private lateinit var onSyncSuccess:() -> Int
 

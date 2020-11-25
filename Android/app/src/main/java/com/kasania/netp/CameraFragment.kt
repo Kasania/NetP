@@ -2,6 +2,7 @@ package com.kasania.netp
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -21,8 +22,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.camera_fragment.*
+import kotlinx.android.synthetic.main.camera_fragment.view.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 class CameraFragment : Fragment() {
@@ -41,6 +44,11 @@ class CameraFragment : Fragment() {
     var minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
     private lateinit var recorder : AudioRecord
 
+    private val enableVideo = AtomicBoolean(true)
+    private val enableAudio = AtomicBoolean(true)
+
+    private val blankBitmap = Bitmap.createBitmap(240,360, Bitmap.Config.ARGB_8888)
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -49,20 +57,36 @@ class CameraFragment : Fragment() {
 
         val rootView = inflater.inflate(R.layout.camera_fragment, container, false)
 
-        //check audio permissions
+        rootView.video_toggle_button.setOnClickListener {
+            if(enableVideo.get()){
+                enableVideo.set(false)
+            }
+            else{
+                enableVideo.set(true)
+            }
+        }
+
+        rootView.audio_toggle_button.setOnClickListener {
+            if(enableAudio.get()){
+                enableAudio.set(false)
+            }
+            else{
+                enableAudio.set(true)
+            }
+        }
+
         if (allPermissionsGranted()) {
 
             startCamera()
 
-
             cameraExecutor = Executors.newSingleThreadExecutor()
             audioExecutor = Executors.newSingleThreadExecutor()
             audioExecutor.execute(this::startAudioRecording)
+
         } else {
             ActivityCompat.requestPermissions(
                     requireActivity(), REQUIRED_CAMERA_PERMISSIONS, REQUEST_CODE_CAMERA_PERMISSIONS
             )
-
             ActivityCompat.requestPermissions(
                     requireActivity(), REQUIRED_AUDIO_PERMISSIONS, REQUEST_CODE_AUDIO_PERMISSIONS
             )
@@ -79,8 +103,10 @@ class CameraFragment : Fragment() {
         Log.d("TAG", "startAudioRecording: $minBufSize")
         val buffer = ByteArray(minBufSize)
         while(true){
-            recorder.read(buffer, 0, buffer.size)
-            Connection.instance.sendAudio(buffer)
+            if(enableAudio.get()){
+                recorder.read(buffer, 0, buffer.size)
+                Connection.instance.sendAudio(buffer)
+            }
         }
     }
 
@@ -91,12 +117,9 @@ class CameraFragment : Fragment() {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             preview = Preview.Builder()
                     .build()
 
-
-            // Select back camera
             val cameraSelector =
                     CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build()
 
@@ -105,15 +128,17 @@ class CameraFragment : Fragment() {
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
             imageAnalysis.setAnalyzer(cameraExecutor, { image ->
-                activity?.runOnUiThread { viewfinder.bitmap?.let { Connection.instance.sendImage(it) } }
-                // insert your code here.
+                if(enableVideo.get()){
+                    activity?.runOnUiThread { viewfinder.bitmap?.let { Connection.instance.sendImage(it) } }
+                }
+                else{
+                    Connection.instance.sendImage(blankBitmap)
+                }
                 image.close()
             })
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
-                // Bind use cases to camera
                 camera = cameraProvider.bindToLifecycle(
                         this, cameraSelector, preview, imageAnalysis
                 )

@@ -4,4 +4,9 @@
     <string name="guide_input">데스크탑의 접속코드를 입력해주세요.</string>
     <string name="confirm">확인</string>
     <string name="code">CODE</string>
+
+    <string name="text_audio_on">Audio On</string>
+    <string name="text_audio_off">Audio Off</string>
+    <string name="text_video_on">Video On</string>
+    <string name="text_video_off">Video Off</string>
 </resources>
