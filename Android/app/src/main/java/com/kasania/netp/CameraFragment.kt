@@ -46,6 +46,7 @@ class CameraFragment : Fragment() {
 
     private val enableVideo = AtomicBoolean(true)
     private val enableAudio = AtomicBoolean(true)
+    private val recordingAudio = AtomicBoolean(true)
 
     private val blankBitmap = Bitmap.createBitmap(240,360, Bitmap.Config.ARGB_8888)
 
@@ -56,6 +57,8 @@ class CameraFragment : Fragment() {
     ): View? {
 
         val rootView = inflater.inflate(R.layout.camera_fragment, container, false)
+
+        Connection.instance.onSyncCanceled { requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_root, LoginFragment()).commit() }
 
         rootView.video_toggle_button.setOnClickListener {
             if(enableVideo.get()){
@@ -102,7 +105,7 @@ class CameraFragment : Fragment() {
 
         Log.d("TAG", "startAudioRecording: $minBufSize")
         val buffer = ByteArray(minBufSize)
-        while(true){
+        while(recordingAudio.get()){
             if(enableAudio.get()){
                 recorder.read(buffer, 0, buffer.size)
                 Connection.instance.sendAudio(buffer)
@@ -129,7 +132,11 @@ class CameraFragment : Fragment() {
                     .build()
             imageAnalysis.setAnalyzer(cameraExecutor, { image ->
                 if(enableVideo.get()){
-                    activity?.runOnUiThread { viewfinder.bitmap?.let { Connection.instance.sendImage(it) } }
+                    activity?.runOnUiThread {
+                        try {
+                            viewfinder.bitmap?.let { Connection.instance.sendImage(it) }
+                        }catch (exp:java.lang.Exception){}
+                    }
                 }
                 else{
                     Connection.instance.sendImage(blankBitmap)
@@ -176,6 +183,18 @@ class CameraFragment : Fragment() {
                 ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
             }
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        enableVideo.set(false)
+        enableAudio.set(false)
+        recordingAudio.set(false)
+        recorder.stop()
+
+        cameraExecutor.shutdown()
+        audioExecutor.shutdown()
+
     }
 
 }

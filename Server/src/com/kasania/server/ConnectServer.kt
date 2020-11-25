@@ -23,6 +23,7 @@ class ConnectServer {
 
         DataType.LOGIN.addReceiver(this::desktopLogin)
         DataType.VERIFY.addReceiver(this::mobileVerification)
+        DataType.TEXT.addReceiver(this::broadCastText)
 
         try {
             selector = Selector.open()
@@ -136,7 +137,7 @@ class ConnectServer {
                     // synchronized mobile connection to pending
                     val mobileConnection = findMobileByConnectionID(desktopConnection!!.connectionID)
                     //do mobile waiting
-//                    mobileConnection?.let { connections[mobileConnection.socketChannel]!!.changeType(Connection.Type.PENDING) }
+                    mobileConnection?.let { mobileConnection.syncCancel() }
 
 
                 }
@@ -202,9 +203,8 @@ class ConnectServer {
         broadCastAudio(0,packagedData)
     }
 
-    private fun debug(socketChannel: SocketChannel, data: ByteArray){
-        println("$socketChannel:$data")
-    }
+
+
 
     private fun desktopLogin(socketChannel: SocketChannel, data: ByteArray){
         println("login : $socketChannel")
@@ -236,24 +236,6 @@ class ConnectServer {
 
     }
 
-    private fun findDesktopByConnectionID(connectionID:Int ) : DesktopConnection? {
-        for (desktopConnection in desktopConnections) {
-            if(desktopConnection.value.connectionID == connectionID){
-                return desktopConnection.value
-            }
-        }
-        return null
-    }
-
-    private fun findMobileByConnectionID(connectionID:Int ) : MobileConnection? {
-        for (mobileConnection in mobileConnections) {
-            if(mobileConnection.value.connectionID == connectionID){
-                return mobileConnection.value
-            }
-        }
-        return null
-    }
-
     private fun sendUserList(){
         val connectedUsers = StringBuilder()
         for (desktopConnection in desktopConnections) {
@@ -278,4 +260,32 @@ class ConnectServer {
         }
     }
 
+    private fun broadCastText(socketChannel: SocketChannel, data: ByteArray){
+        for (desktopConnection in desktopConnections) {
+            desktopConnection.value.send(DataType.TEXT, desktopConnections[socketChannel]!!.connectionID,ByteBuffer.wrap(data))
+        }
+    }
+
+
+    private fun findDesktopByConnectionID(connectionID:Int ) : DesktopConnection? {
+        for (desktopConnection in desktopConnections) {
+            if(desktopConnection.value.connectionID == connectionID){
+                return desktopConnection.value
+            }
+        }
+        return null
+    }
+
+    private fun findMobileByConnectionID(connectionID:Int ) : MobileConnection? {
+        for (mobileConnection in mobileConnections) {
+            if(mobileConnection.value.connectionID == connectionID){
+                return mobileConnection.value
+            }
+        }
+        return null
+    }
+
+    private fun debug(socketChannel: SocketChannel, data: ByteArray){
+        println("$socketChannel:$data")
+    }
 }

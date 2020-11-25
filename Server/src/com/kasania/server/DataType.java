@@ -14,7 +14,8 @@ public enum DataType {
 
     SYNC('S'),
     SYNCDone('D'),
-    SYNCFail('F'),
+    SYNCCancel('C'),
+
 
     IMAGE('I'),
     AUDIO('A'),

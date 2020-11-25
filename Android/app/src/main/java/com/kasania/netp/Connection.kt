@@ -21,8 +21,11 @@ class Connection private constructor() {
 
     private val TYPE_VERIFICATION = 'V'
     private val TYPE_SYNCDONE = 'D'
+    private val TYPE_SYNCCANCLE = 'C'
 
     private lateinit var onSyncSuccess:() -> Int
+
+    private lateinit var onSyncCancel:() -> Int
 
     private val isSynchronized : AtomicBoolean = AtomicBoolean(false)
 
@@ -50,10 +53,13 @@ class Connection private constructor() {
     }
 
     fun disconnect(){
+        isSynchronized.set(false)
         executorService.shutdown();
         writeExecutor.shutdown()
         socketChannel.finishConnect()
         socketChannel.close()
+        dataChannel.close()
+        onSyncCancel.invoke()
     }
 
     private fun establishConnection(){
@@ -82,23 +88,24 @@ class Connection private constructor() {
 
 
     fun sendAudio(data:ByteArray){
-        writeExecutor.execute {
-            if(isSynchronized.get()){
+        if(isSynchronized.get()){
+            writeExecutor.execute {
                 val packagedData = ByteBuffer.allocate(4 + data.size)
                 packagedData.putInt(connectionID)
                 packagedData.put(data)
                 packagedData.flip()
                 dataChannel.send(packagedData,audioDataAddress)
+
+                return@execute
             }
-            return@execute
         }
 
     }
 
 
     fun sendImage(bitmap: Bitmap){
-        writeExecutor.execute {
-            if(isSynchronized.get()){
+        if(isSynchronized.get()){
+            writeExecutor.execute {
                 val baos = ByteArrayOutputStream()
                 val matrix = Matrix()
                 matrix.postScale(240.toFloat() / bitmap.width, 360.toFloat() / bitmap.height)
@@ -156,6 +163,9 @@ class Connection private constructor() {
             if(type == TYPE_SYNCDONE){
                 isSynchronized.set(true)
                 onSyncSuccess.invoke()
+            }else if(type == TYPE_SYNCCANCLE) {
+                isSynchronized.set(false)
+                onSyncCancel.invoke()
             }
 
         } catch (ex: ClosedByInterruptException) {
@@ -169,6 +179,10 @@ class Connection private constructor() {
 
     fun onSyncSucceed(run: () -> Int) {
         onSyncSuccess = run
+    }
+
+    fun onSyncCanceled(run: () -> Int) {
+        onSyncCancel = run
     }
 
 

@@ -59,6 +59,7 @@ public class SceneNavigator {
         contentRoot.removeAll();
         contentRoot.add(scenes.get(scene));
         contentRoot.revalidate();
+        contentRoot.repaint();
     }
 
 }

@@ -24,12 +24,7 @@ class DesktopConnection(socketChannel: SocketChannel, val name: String) : Connec
             sendAudio(data)
         }
     }
-    fun sendAudio2(data: ByteBuffer, src:Int){
-        if(syncDone.get()){
-            send(DataType.AUDIO,src, data)
-        }
 
-    }
     fun sendUserList(userList: String) {
         send(DataType.UPDATE_USER,0, ByteBuffer.wrap(userList.toByteArray(Charsets.UTF_8)))
 

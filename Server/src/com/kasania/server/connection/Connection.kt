@@ -20,8 +20,8 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
     fun getType(): Type {
         return this.type
     }
-    val imageDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11114)
-    val audioDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11115)
+    private val imageDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11114)
+    private val audioDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11115)
     private fun makePacket(dataType: DataType, src:Int, data: ByteBuffer): ByteBuffer? {
 
         val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
