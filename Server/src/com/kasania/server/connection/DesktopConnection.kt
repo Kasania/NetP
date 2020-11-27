@@ -7,21 +7,19 @@ import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-class DesktopConnection(socketChannel: SocketChannel, val name: String) : Connection(socketChannel, Type.DESKTOP) {
+class DesktopConnection(socketChannel: SocketChannel, val name: String, val imagePort :Int, val  audioPort :Int) : Connection(socketChannel, Type.DESKTOP) {
 
     val connectionID : Int = (SecureRandom().nextInt(90000000) + 10000000)
 
-    val syncDone : AtomicBoolean = AtomicBoolean(false)
-
     fun sendImage(data: ByteBuffer, src:Int){
         if(syncDone.get()){
-            sendImage(data)
+            sendImage(imagePort, data)
         }
     }
 
     fun sendAudio(data: ByteBuffer, src:Int){
         if(syncDone.get()){
-            sendAudio(data)
+            sendAudio(audioPort, data)
         }
     }
 
@@ -36,5 +34,6 @@ class DesktopConnection(socketChannel: SocketChannel, val name: String) : Connec
         buffer.flip()
         send(DataType.SYNC,0, buffer)
     }
+
 
 }

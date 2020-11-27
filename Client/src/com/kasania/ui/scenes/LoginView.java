@@ -1,6 +1,8 @@
 package com.kasania.ui.scenes;
 
+import com.kasania.net.Connection;
 import com.kasania.net.DataType;
+import com.kasania.ui.MainFrame;
 
 import javax.swing.*;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +17,6 @@ public class LoginView {
     }
 
     {
-        loginButton.addActionListener(e -> DataType.LOGIN.send(textField.getText().getBytes(StandardCharsets.UTF_8)));
+        loginButton.addActionListener(e -> DataType.LOGIN.send((textField.getText() + "::"+ Connection.VideoPort + "::"+Connection.AudioPort).getBytes(StandardCharsets.UTF_8)));
     }
 }

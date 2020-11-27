@@ -1,6 +1,7 @@
-package com.kasania;
+package com.kasania.sound;
 
 import com.kasania.net.DataType;
+import com.kasania.net.UserInfo;
 
 import javax.sound.sampled.*;
 import java.util.concurrent.ExecutorService;
@@ -11,9 +12,12 @@ public class AudioReader {
     private final AudioFormat format = new AudioFormat(sampleRate, 16, 1, true, false);
     private SourceDataLine speaker;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    {
 
+    private final AudioDataSet audioDataSet = new AudioDataSet();
+
+    {
         try {
+
             speaker = AudioSystem.getSourceDataLine(format);
             speaker.open(format,3528);
             speaker.start();
@@ -21,15 +25,18 @@ public class AudioReader {
         } catch (LineUnavailableException e) {
             e.printStackTrace();
         }
-        DataType.AUDIO.addReceiver((info, bytes) -> toSpeaker(bytes));
+        DataType.AUDIO.addReceiver(this::toSpeaker);
     }
 
-    public void toSpeaker(byte[] soundBytes) {
+    public void toSpeaker(UserInfo info, byte[] soundBytes) {
         executor.execute(()->{
             try {
-
-                speaker.write(soundBytes,0, 3528);
-
+                if(audioDataSet.contains(info.idx)){
+                    byte[] data = audioDataSet.merge();
+                    speaker.write(data,0, data.length);
+                    audioDataSet.clear();
+                }
+                audioDataSet.put(info.idx, soundBytes);
             } catch (Exception e) {
                 System.out.println("Error with audio playback: " + e);
                 e.printStackTrace();

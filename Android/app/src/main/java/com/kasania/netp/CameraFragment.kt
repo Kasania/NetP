@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.NoiseSuppressor
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class CameraFragment : Fragment() {
     private val REQUEST_CODE_CAMERA_PERMISSIONS = 10
     private val REQUEST_CODE_AUDIO_PERMISSIONS = 200
-    private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO)
     private val REQUIRED_AUDIO_PERMISSIONS = arrayOf(Manifest.permission.RECORD_AUDIO)
     private var preview: Preview? = null
     private var camera: Camera? = null
@@ -78,22 +79,21 @@ class CameraFragment : Fragment() {
             }
         }
 
+
         if (allPermissionsGranted()) {
-
             startCamera()
-
             cameraExecutor = Executors.newSingleThreadExecutor()
             audioExecutor = Executors.newSingleThreadExecutor()
             audioExecutor.execute(this::startAudioRecording)
 
         } else {
+
             ActivityCompat.requestPermissions(
-                    requireActivity(), REQUIRED_CAMERA_PERMISSIONS, REQUEST_CODE_CAMERA_PERMISSIONS
-            )
-            ActivityCompat.requestPermissions(
-                    requireActivity(), REQUIRED_AUDIO_PERMISSIONS, REQUEST_CODE_AUDIO_PERMISSIONS
+                    requireActivity(), REQUIRED_CAMERA_PERMISSIONS, REQUEST_CODE_CAMERA_PERMISSIONS + REQUEST_CODE_AUDIO_PERMISSIONS
             )
         }
+
+
 
         return rootView
     }
@@ -102,12 +102,15 @@ class CameraFragment : Fragment() {
 
         recorder = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, sampleRate, channelConfig, audioFormat, minBufSize)
         recorder.startRecording()
-
-        Log.d("TAG", "startAudioRecording: $minBufSize")
+//        NoiseSuppressor.create(recorder.audioSessionId).enabled
+        Log.d("TAG", "startAudioRecording: $minBufSize" +
+                "" +
+                "")
         val buffer = ByteArray(minBufSize)
         while(recordingAudio.get()){
             if(enableAudio.get()){
                 recorder.read(buffer, 0, buffer.size)
+
                 Connection.instance.sendAudio(buffer)
             }
         }
@@ -161,7 +164,7 @@ class CameraFragment : Fragment() {
             requestCode: Int, permissions: Array<String>, grantResults:
             IntArray
     ) {
-        if (requestCode == REQUEST_CODE_CAMERA_PERMISSIONS) {
+        if (requestCode == REQUEST_CODE_CAMERA_PERMISSIONS + REQUEST_CODE_CAMERA_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {

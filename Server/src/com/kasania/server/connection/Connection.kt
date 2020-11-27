@@ -1,10 +1,13 @@
 package com.kasania.server.connection
 
 import com.kasania.server.DataType
+import java.net.DatagramPacket
+import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.DatagramChannel
 import java.nio.channels.SocketChannel
+import java.util.concurrent.atomic.AtomicBoolean
 
 open class Connection(val socketChannel: SocketChannel, private var type: Type) {
 
@@ -12,7 +15,9 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
         DESKTOP,MOBILE,PENDING
     }
 
-    private val datagramChannel = DatagramChannel.open()
+    private val datagramChannel = DatagramSocket()
+
+    val syncDone : AtomicBoolean = AtomicBoolean(false)
 
     fun changeType(type: Type){
         this.type = type
@@ -20,8 +25,6 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
     fun getType(): Type {
         return this.type
     }
-    private val imageDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11114)
-    private val audioDataAddress = InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address,11115)
     private fun makePacket(dataType: DataType, src:Int, data: ByteBuffer): ByteBuffer? {
 
         val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
@@ -30,6 +33,7 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
         packagedData.put(data)
         packagedData.flip()
         return packagedData
+
     }
 
     fun send(dataType: DataType, src:Int, data: ByteBuffer){
@@ -46,16 +50,35 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
         }
     }
 
-    fun sendImage(data: ByteBuffer){
-        datagramChannel.send(data, imageDataAddress)
+    fun sendImage(imagePort :Int, data: ByteBuffer){
+        datagramChannel.send(DatagramPacket(data.array(), data.limit(), InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address, imagePort)))
     }
 
-    fun sendAudio(data: ByteBuffer){
-        datagramChannel.send(data, audioDataAddress)
+    fun sendAudio(audioPort :Int, data: ByteBuffer){
+        datagramChannel.send(DatagramPacket(data.array(), data.limit(), InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address, audioPort)))
+    }
+
+    fun sendImage2(imagePort :Int, data: ByteBuffer){
+        val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
+        packagedData.putChar(DataType.IMAGE.code)
+        packagedData.put(data)
+        packagedData.flip()
+        send(packagedData)
+    }
+
+    fun sendAudio2(audioPort :Int, data: ByteBuffer){
+        val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
+        packagedData.putChar(DataType.IMAGE.code)
+        packagedData.put(data)
+        packagedData.flip()
+        send(packagedData)
     }
 
 
-    fun syncDone() {
-        send(DataType.SYNCDone, 0, ByteBuffer.wrap("".toByteArray()));
+    fun syncDone(port:Int) {
+        val buffer = ByteBuffer.allocate(4)
+        buffer.putInt(port)
+        buffer.flip()
+        send(DataType.SYNCDone, 0, buffer)
     }
 }

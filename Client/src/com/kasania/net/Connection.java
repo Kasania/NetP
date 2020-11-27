@@ -1,6 +1,8 @@
 package com.kasania.net;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
@@ -14,8 +16,8 @@ import java.util.concurrent.FutureTask;
 public final class Connection {
 
     private SocketChannel socketChannel;
-    private DatagramChannel imageDataChannel;
-    private DatagramChannel audioDataChannel;
+    private DatagramSocket imageSocket;
+    private DatagramSocket audioSocket;
 
     private ExecutorService executorService;
     private FutureTask<?> task;
@@ -31,7 +33,13 @@ public final class Connection {
     private Sender sender;
     private Receiver receiver;
 
-    public void connect(String address, int port){
+    public static int VideoPort;
+    public static int AudioPort;
+
+    public void connect(String address, int port, int imagePort, int audioPort){
+
+        VideoPort = imagePort;
+        AudioPort = audioPort;
 
         new Thread(() ->{
 
@@ -39,11 +47,8 @@ public final class Connection {
                 socketChannel = SocketChannel.open();
                 socketChannel.connect(new InetSocketAddress(address,port));
 
-                imageDataChannel = DatagramChannel.open();
-                imageDataChannel.bind(new InetSocketAddress(11114));
-
-                audioDataChannel = DatagramChannel.open();
-                audioDataChannel.bind(new InetSocketAddress(11115));
+                imageSocket = new DatagramSocket(new InetSocketAddress(VideoPort));
+                audioSocket = new DatagramSocket(new InetSocketAddress(AudioPort));
 
                 sender = new Sender();
                 receiver = new Receiver();
@@ -102,7 +107,10 @@ public final class Connection {
         ByteBuffer data = ByteBuffer.allocate(16384);
 
         try {
-            imageDataChannel.receive(data);
+            byte[] buffer = new byte[16384];
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
+            imageSocket.receive(datagramPacket);
+            data.put(buffer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -114,7 +122,11 @@ public final class Connection {
         ByteBuffer data = ByteBuffer.allocate(3528 + Integer.BYTES);
 
         try {
-            audioDataChannel.receive(data);
+
+            byte[] buffer = new byte[3528 + Integer.BYTES];
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, 3528 + Integer.BYTES);
+            audioSocket.receive(datagramPacket);
+            data.put(buffer);
         } catch (IOException e) {
             e.printStackTrace();
         }

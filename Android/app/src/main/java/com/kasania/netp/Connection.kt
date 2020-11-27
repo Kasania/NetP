@@ -2,6 +2,7 @@ package com.kasania.netp
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
@@ -65,6 +66,7 @@ class Connection private constructor() {
     private fun establishConnection(){
         socketChannel = SocketChannel.open()
         socketChannel.connect(InetSocketAddress(address, port))
+        socketChannel.configureBlocking(true)
 
         dataChannel = DatagramChannel.open()
         imageDataAddress = InetSocketAddress(address,imageDataPort)
@@ -158,9 +160,14 @@ class Connection private constructor() {
             val type = packagedData.char
             val src = packagedData.int
             val data = ByteArray(packagedData.limit() - 2 - 4)
-            packagedData.get(data)
+
 
             if(type == TYPE_SYNCDONE){
+                val audioPort = packagedData.int
+                Log.d("TAG", "limit: ${packagedData.limit()}")
+                Log.d("TAG", "src: $src")
+                audioDataAddress = InetSocketAddress(address, audioPort)
+
                 isSynchronized.set(true)
                 onSyncSuccess.invoke()
             }else if(type == TYPE_SYNCCANCLE) {

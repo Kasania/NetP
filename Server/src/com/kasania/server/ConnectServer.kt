@@ -24,6 +24,7 @@ class ConnectServer {
         DataType.LOGIN.addReceiver(this::desktopLogin)
         DataType.VERIFY.addReceiver(this::mobileVerification)
         DataType.TEXT.addReceiver(this::broadCastText)
+        DataType.AUDIO.addUDPReceiver(this::broadCastAudio)
 
         try {
             selector = Selector.open()
@@ -40,11 +41,11 @@ class ConnectServer {
             imageChannel.configureBlocking(false)
             imageChannel.register(imageSelector, SelectionKey.OP_READ)
 
-
-            val audioChannel = DatagramChannel.open()
-            audioChannel.bind(InetSocketAddress(11113))
-            audioChannel.configureBlocking(false)
-            audioChannel.register(audioSelector, SelectionKey.OP_READ)
+//
+//            val audioChannel = DatagramChannel.open()
+//            audioChannel.bind(InetSocketAddress(11113))
+//            audioChannel.configureBlocking(false)
+//            audioChannel.register(audioSelector, SelectionKey.OP_READ)
 
         } catch (e: IOException) {
             e.printStackTrace()
@@ -67,23 +68,23 @@ class ConnectServer {
             }
         }.start()
 
-
-        Thread{
-            while (true) {
-                audioSelector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
-
-                for (selectedKey in audioSelector!!.selectedKeys()) {
-                    try{
-                        if (selectedKey.isReadable) {
-                            readAudio(selectedKey)
-                        }
-                    }catch (exp: Exception){
-                    }
-                }
-                audioSelector!!.selectedKeys().clear()
-
-            }
-        }.start()
+//
+//        Thread{
+//            while (true) {
+//                audioSelector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
+//
+//                for (selectedKey in audioSelector!!.selectedKeys()) {
+//                    try{
+//                        if (selectedKey.isReadable) {
+//                            readAudio(selectedKey)
+//                        }
+//                    }catch (exp: Exception){
+//                    }
+//                }
+//                audioSelector!!.selectedKeys().clear()
+//
+//            }
+//        }.start()
 
         Thread{
             while (true) {
@@ -115,7 +116,7 @@ class ConnectServer {
     private fun disconnect(selectedKey: SelectionKey) {
 
         val socketChannel = selectedKey.channel() as SocketChannel
-        println("disconnect : $socketChannel")
+        println("disconnect : ${socketChannel.remoteAddress}")
         val connection = connections[socketChannel]
 
         if (connection != null) {
@@ -127,7 +128,7 @@ class ConnectServer {
                     // synchronized desktop connection to pending
                     val desktopConnection = findDesktopByConnectionID(mobileConnection!!.connectionID)
                     desktopConnection?.let {
-                        desktopConnection.syncDone.set(true)
+                        desktopConnection.syncDone.set(false)
                         desktopConnection.sendSync()
                     }
                 }
@@ -137,7 +138,10 @@ class ConnectServer {
                     // synchronized mobile connection to pending
                     val mobileConnection = findMobileByConnectionID(desktopConnection!!.connectionID)
                     //do mobile waiting
-                    mobileConnection?.let { mobileConnection.syncCancel() }
+                    mobileConnection?.let {
+                        mobileConnection.syncDone.set(false)
+                        mobileConnection.syncCancel()
+                    }
 
 
                 }
@@ -157,7 +161,7 @@ class ConnectServer {
             socketChannel.register(selector, SelectionKey.OP_READ)
             connections[socketChannel] = Connection(socketChannel, Connection.Type.PENDING)
         }
-        println("accepted : $selectionKey")
+        println("accepted : ${(selectionKey.channel()as SocketChannel).remoteAddress}")
     }
 
     @Throws(IOException::class)
@@ -191,7 +195,7 @@ class ConnectServer {
         val packagedData: ByteBuffer = ByteBuffer.allocate(16384)
         datagramChannel.receive(packagedData)
         packagedData.flip()
-        broadCastImage(0,packagedData)
+        broadCastImage(0, packagedData)
     }
 
     @Throws(IOException::class)
@@ -200,15 +204,19 @@ class ConnectServer {
         val packagedData: ByteBuffer = ByteBuffer.allocate(3528 + Int.SIZE_BYTES)
         datagramChannel.receive(packagedData)
         packagedData.flip()
-        broadCastAudio(0,packagedData)
+        broadCastAudio(0, packagedData)
     }
 
-
-
-
     private fun desktopLogin(socketChannel: SocketChannel, data: ByteArray){
-        println("login : $socketChannel")
-        val desktopConnection = DesktopConnection(socketChannel, String(data, Charsets.UTF_8))
+
+
+        val str = String(data, Charsets.UTF_8)
+        val strs = str.split("::")
+
+        println("login : ${socketChannel.remoteAddress}, $strs")
+
+        val desktopConnection = DesktopConnection(socketChannel, strs[0], Integer.parseInt(strs[1]), Integer.parseInt(strs[2]))
+
         desktopConnections[socketChannel] = desktopConnection
         connections[socketChannel]?.changeType(type = Connection.Type.DESKTOP)
 
@@ -226,11 +234,17 @@ class ConnectServer {
             mobileConnections[socketChannel] = mobileConnection
             connections[socketChannel]?.changeType(Connection.Type.MOBILE)
 
-            desktopConnection.syncDone()
-            mobileConnection.syncDone()
+            val port = mobileConnection.prepareAudio()
+
+            desktopConnection.syncDone(port)
             desktopConnection.syncDone.set(true)
 
-            println("sync : $connectionID, ${desktopConnection.socketChannel}, ${mobileConnection.socketChannel}")
+            mobileConnection.syncDone.set(true)
+            mobileConnection.runAudioRead()
+            mobileConnection.syncDone(port)
+
+
+            println("sync : $connectionID, ${desktopConnection.socketChannel.remoteAddress}, ${mobileConnection.socketChannel.remoteAddress}")
             sendUserList()
         }
 
@@ -250,13 +264,13 @@ class ConnectServer {
 
     private fun broadCastImage(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-            desktopConnection.value.sendImage(data,0)
+            desktopConnection.value.sendImage(data, src)
         }
     }
 
     private fun broadCastAudio(src: Int, data: ByteBuffer){
         for (desktopConnection in desktopConnections) {
-            desktopConnection.value.sendAudio(data,0)
+            desktopConnection.value.sendAudio(data, src)
         }
     }
 

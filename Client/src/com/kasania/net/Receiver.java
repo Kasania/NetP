@@ -27,10 +27,8 @@ public class Receiver {
         isRunning.set(true);
 
         while(true){
-            synchronized (this){
-                if(!isRunning.get()){
-                    return false;
-                }
+            if(!isRunning.get()){
+                return false;
             }
 
             ByteBuffer buffer = reader.get();
@@ -54,17 +52,14 @@ public class Receiver {
         isImageReceiveRunning.set(true);
 
         while(true){
-            synchronized (this){
-                if(!isImageReceiveRunning.get()){
-                    return false;
-                }
+            if(!isImageReceiveRunning.get()){
+                return false;
             }
 
             ByteBuffer buffer = imageReader.get();
             byte[] data = new byte[buffer.limit() - Integer.BYTES];
             int src = buffer.getInt();
             buffer.get(data);
-
             DataType.IMAGE.received(UserInfo.names.get(src),data);
 
         }
@@ -74,17 +69,14 @@ public class Receiver {
         isAudioReceiveRunning.set(true);
 
         while(true){
-            synchronized (this){
-                if(!isAudioReceiveRunning.get()){
-                    return false;
-                }
+            if(!isAudioReceiveRunning.get()){
+                return false;
             }
 
             ByteBuffer buffer = audioReader.get();
             int src = buffer.getInt();
             byte[] data = new byte[buffer.limit() - Integer.BYTES];
             buffer.get(data);
-
             DataType.AUDIO.received(UserInfo.names.get(src), data);
 
         }
@@ -106,6 +98,8 @@ public class Receiver {
     void shutdown(){
         synchronized (this){
             isRunning.set(false);
+            isImageReceiveRunning.set(false);
+            isAudioReceiveRunning.set(false);
         }
     }
 }
