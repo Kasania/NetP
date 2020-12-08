@@ -1,9 +1,6 @@
 package com.kasania.net;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -15,8 +12,6 @@ public class Receiver {
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final AtomicBoolean isImageReceiveRunning = new AtomicBoolean(false);
     private final AtomicBoolean isAudioReceiveRunning = new AtomicBoolean(false);
-
-
 
     public Receiver(){
 
@@ -37,7 +32,7 @@ public class Receiver {
             byte[] data = new byte[buffer.limit() - Character.BYTES - Integer.BYTES];
             buffer.get(data);
             if(src == 0){
-                DataType.getType(type).received(new UserInfo(-1, "SERVER"),data);
+                DataType.getType(type).received(new UserInfo(-1,0, "SERVER"),data);
             }
             else{
                 DataType.getType(type).received(UserInfo.names.get(src),data);
@@ -60,8 +55,9 @@ public class Receiver {
             byte[] data = new byte[buffer.limit() - Integer.BYTES];
             int src = buffer.getInt();
             buffer.get(data);
-            DataType.IMAGE.received(UserInfo.names.get(src),data);
 
+            UserInfo info = UserInfo.getUserInfo(src);
+            DataType.IMAGE.received(info,data);
         }
     }
 
@@ -74,15 +70,14 @@ public class Receiver {
             }
 
             ByteBuffer buffer = audioReader.get();
-            int src = buffer.getInt();
-            byte[] data = new byte[buffer.limit() - Integer.BYTES];
-            buffer.get(data);
-            DataType.AUDIO.received(UserInfo.names.get(src), data);
-
+//            int src = buffer.getInt();
+//            byte[] data = new byte[buffer.limit() - Integer.BYTES];
+//            buffer.get(data);
+//
+//            UserInfo info = UserInfo.getUserInfo(src);
+            DataType.AUDIO.received(UserInfo.SERVER, buffer.array());
         }
     }
-
-
 
     void addReader(Supplier<ByteBuffer> reader){
         this.reader = reader;

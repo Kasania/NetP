@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -36,16 +36,21 @@ public final class Connection {
     public static int VideoPort;
     public static int AudioPort;
 
-    public void connect(String address, int port, int imagePort, int audioPort){
+    public void connect(String address, int port){
 
-        VideoPort = imagePort;
-        AudioPort = audioPort;
 
         new Thread(() ->{
 
             try {
                 socketChannel = SocketChannel.open();
                 socketChannel.connect(new InetSocketAddress(address,port));
+
+                ServerSocket socket = new ServerSocket(0);
+                VideoPort = socket.getLocalPort();
+                socket.close();
+                ServerSocket socket2 = new ServerSocket(0);
+                AudioPort = socket2.getLocalPort();
+                socket2.close();
 
                 imageSocket = new DatagramSocket(new InetSocketAddress(VideoPort));
                 audioSocket = new DatagramSocket(new InetSocketAddress(AudioPort));

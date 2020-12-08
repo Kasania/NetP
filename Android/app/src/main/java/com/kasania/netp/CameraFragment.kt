@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.media.audiofx.NoiseSuppressor
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
@@ -27,12 +26,13 @@ import kotlinx.android.synthetic.main.camera_fragment.view.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 
 
 class CameraFragment : Fragment() {
     private val REQUEST_CODE_CAMERA_PERMISSIONS = 10
     private val REQUEST_CODE_AUDIO_PERMISSIONS = 200
-    private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO)
+    private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
     private val REQUIRED_AUDIO_PERMISSIONS = arrayOf(Manifest.permission.RECORD_AUDIO)
     private var preview: Preview? = null
     private var camera: Camera? = null
@@ -49,7 +49,7 @@ class CameraFragment : Fragment() {
     private val enableAudio = AtomicBoolean(true)
     private val recordingAudio = AtomicBoolean(true)
 
-    private val blankBitmap = Bitmap.createBitmap(240,360, Bitmap.Config.ARGB_8888)
+    private val blankBitmap = Bitmap.createBitmap(240, 360, Bitmap.Config.ARGB_8888)
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -102,16 +102,28 @@ class CameraFragment : Fragment() {
 
         recorder = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, sampleRate, channelConfig, audioFormat, minBufSize)
         recorder.startRecording()
-//        NoiseSuppressor.create(recorder.audioSessionId).enabled
-        Log.d("TAG", "startAudioRecording: $minBufSize" +
-                "" +
-                "")
+        Log.d("TAG", "startAudioRecording: $minBufSize")
         val buffer = ByteArray(minBufSize)
+
+        var sample: Float
+        var numberOfReadBytes: Int
         while(recordingAudio.get()){
             if(enableAudio.get()){
-                recorder.read(buffer, 0, buffer.size)
+                var gain = 0.0f
 
-                Connection.instance.sendAudio(buffer)
+                numberOfReadBytes = recorder.read(buffer, 0, buffer.size)
+                var i = 0
+                while (i < minBufSize) {
+                    sample = (buffer[i].toInt() or buffer[i + 1].toInt() shl 8).toFloat()
+                    gain += abs(sample) / (numberOfReadBytes.toFloat() / 2.toFloat())
+                    i += 2
+                }
+
+
+                if(gain>3000){
+                    Connection.instance.sendAudio(buffer)
+                }
+
             }
         }
     }
@@ -134,14 +146,14 @@ class CameraFragment : Fragment() {
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
             imageAnalysis.setAnalyzer(cameraExecutor, { image ->
-                if(enableVideo.get()){
+                if (enableVideo.get()) {
                     activity?.runOnUiThread {
                         try {
                             viewfinder.bitmap?.let { Connection.instance.sendImage(it) }
-                        }catch (exp:java.lang.Exception){}
+                        } catch (exp: java.lang.Exception) {
+                        }
                     }
-                }
-                else{
+                } else {
                     Connection.instance.sendImage(blankBitmap)
                 }
                 image.close()

@@ -14,26 +14,21 @@ public class AudioDataSet {
     }
 
     public boolean contains(int src){
-        for (int audioSource : audioSourceList) {
-            if(audioSource == src){
-                return true;
-            }
-        }
-        return false;
+        return audioSourceList.contains(src);
     }
 
     public byte[] merge(){
         byte[] data = new byte[3528];
-        byte size = (byte) audioDataList.size();
         for (byte[] audioData : audioDataList) {
             for(int i = 0; i<data.length; ++i){
-                data[i] += audioData[i] / size;
+                data[i] += audioData[i];
             }
         }
         return data;
     }
 
     public void clear(){
+        audioSourceList.clear();
         audioDataList.clear();
     }
 

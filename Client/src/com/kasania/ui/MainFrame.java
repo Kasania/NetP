@@ -16,10 +16,10 @@ public class MainFrame {
     private SceneNavigator navigator;
 
 
-    public MainFrame(int videoPort, int audioPort){
+    public MainFrame(){
 
         initComponents();
-        connection.connect("223.194.154.137",11111, videoPort, audioPort);
+        connection.connect("192.168.219.105",11111);
 
         navigator.navigateTo(SceneNavigator.Items.LOGIN);
 

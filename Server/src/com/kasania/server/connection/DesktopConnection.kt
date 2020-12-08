@@ -4,7 +4,6 @@ import com.kasania.server.DataType
 import java.nio.ByteBuffer
 import java.nio.channels.SocketChannel
 import java.security.SecureRandom
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 class DesktopConnection(socketChannel: SocketChannel, val name: String, val imagePort :Int, val  audioPort :Int) : Connection(socketChannel, Type.DESKTOP) {

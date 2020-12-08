@@ -5,7 +5,6 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.nio.channels.DatagramChannel
 import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -57,23 +56,6 @@ open class Connection(val socketChannel: SocketChannel, private var type: Type) 
     fun sendAudio(audioPort :Int, data: ByteBuffer){
         datagramChannel.send(DatagramPacket(data.array(), data.limit(), InetSocketAddress((socketChannel.remoteAddress as InetSocketAddress).address, audioPort)))
     }
-
-    fun sendImage2(imagePort :Int, data: ByteBuffer){
-        val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
-        packagedData.putChar(DataType.IMAGE.code)
-        packagedData.put(data)
-        packagedData.flip()
-        send(packagedData)
-    }
-
-    fun sendAudio2(audioPort :Int, data: ByteBuffer){
-        val packagedData = ByteBuffer.allocate(Character.BYTES + Integer.BYTES + data.limit())
-        packagedData.putChar(DataType.IMAGE.code)
-        packagedData.put(data)
-        packagedData.flip()
-        send(packagedData)
-    }
-
 
     fun syncDone(port:Int) {
         val buffer = ByteBuffer.allocate(4)

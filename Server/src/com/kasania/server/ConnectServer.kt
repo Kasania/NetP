@@ -68,24 +68,6 @@ class ConnectServer {
             }
         }.start()
 
-//
-//        Thread{
-//            while (true) {
-//                audioSelector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
-//
-//                for (selectedKey in audioSelector!!.selectedKeys()) {
-//                    try{
-//                        if (selectedKey.isReadable) {
-//                            readAudio(selectedKey)
-//                        }
-//                    }catch (exp: Exception){
-//                    }
-//                }
-//                audioSelector!!.selectedKeys().clear()
-//
-//            }
-//        }.start()
-
         Thread{
             while (true) {
                 selector!!.select(); //select() 메소드로 준비된 이벤트가 있는지 확인한다.
@@ -151,6 +133,7 @@ class ConnectServer {
         socketChannel.shutdownInput()
         socketChannel.close()
 
+        sendUserList()
     }
 
     @Throws(IOException::class)
@@ -201,7 +184,7 @@ class ConnectServer {
     @Throws(IOException::class)
     private fun readAudio(selectionKey: SelectionKey) {
         val datagramChannel = selectionKey.channel() as DatagramChannel
-        val packagedData: ByteBuffer = ByteBuffer.allocate(3528 + Int.SIZE_BYTES)
+        val packagedData: ByteBuffer = ByteBuffer.allocate(880 + Int.SIZE_BYTES)
         datagramChannel.receive(packagedData)
         packagedData.flip()
         broadCastAudio(0, packagedData)

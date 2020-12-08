@@ -2,9 +2,9 @@ package com.kasania.ui.scenes;
 
 import com.kasania.net.Connection;
 import com.kasania.net.DataType;
-import com.kasania.ui.MainFrame;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.nio.charset.StandardCharsets;
 
 public class LoginView {
@@ -17,6 +17,13 @@ public class LoginView {
     }
 
     {
-        loginButton.addActionListener(e -> DataType.LOGIN.send((textField.getText() + "::"+ Connection.VideoPort + "::"+Connection.AudioPort).getBytes(StandardCharsets.UTF_8)));
+        loginButton.addActionListener(this::sendNickname);
+        textField.addActionListener(this::sendNickname);
+    }
+
+    private void sendNickname(ActionEvent e){
+        if(!textField.getText().contentEquals("")){
+            DataType.LOGIN.send((textField.getText() + "::"+ Connection.VideoPort + "::"+Connection.AudioPort).getBytes(StandardCharsets.UTF_8));
+        }
     }
 }
